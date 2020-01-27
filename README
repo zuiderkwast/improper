@@ -1,0 +1,57 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            The Meaning of the Improper List Types in Erlang
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An improper list is a chain of cons cells, not terminated by [].
+   ~~~~~~~~~~~~~
+
+When writing types and function specifications, the following types are
+defined under [Types and Function Specifications] [1] in the Erlang
+Reference Manual:
+
+  * maybe_improper_list(Type1, Type2)    %% Type1=contents, Type2=termination
+  * nonempty_improper_list(Type1, Type2) %% Type1 and Type2 as above
+  * nonempty_maybe_improper_list(Type1, Type2)
+
+"where the last two types define the set of Erlang terms one would
+expect." (sic)                                           ~~~~~~~~~
+~~~~~~
+
+The author may have thought that it is obvious what one would expect,
+but during discussions, multiple suggestions of what these types
+represent have been presented.
+
+Q1. What do they represent?
+
+Q2. Does "maybe" refer to the being a list or to being improper?
+                              ~~~~~~~~~~~~       ~~~~~~~~~~~~~~
+Q3. Why is there no "nonempty_improper_list(Type1, Type2)"?
+
+Instead of asking the author, this is an attempt to use the tools
+written by the author (and associated people) to find out.
+
+   _____________________________
+  /                            /
+ /  Approach 1. Using TypEr   /
+/____________________________/
+
+Write some functions without type specifications and use TypEr to give
+them types.
+
+Result: The output of `typer type_me.erl` is stored in typer_output.txt.
+
+TypEr version v3.3.1 was used (Erlang/OTP 21).
+
+   _____________________________
+  /                            /
+ / Approach 2. Using dialyzer /
+/____________________________/
+
+Write some function with function specification and try to provoke
+dialyzer to report errors for them.
+
+TODO.
+
+The results will be presented when the experiments have been performed.
+
+[1]: http://erlang.org/doc/reference_manual/typespec.html

@@ -1,0 +1,7 @@
+
+%% File: "type_me.erl"
+%% -------------------
+-spec f1(_) -> 'tail' | nonempty_improper_list('head','tail').
+-spec f2(_) -> nonempty_maybe_improper_list('head','tail' | []).
+-spec f3(_) -> maybe_improper_list('head','tail' | []).
+-spec f4(_) -> nonempty_improper_list('head','tail').

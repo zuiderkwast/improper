@@ -1,57 +1,86 @@
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            The Meaning of the Improper List Types in Erlang
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+|           The Meaning of the Improper List Types in Erlang           |
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 
 An improper list is a chain of cons cells, not terminated by [].
    ~~~~~~~~~~~~~
 
 When writing types and function specifications, the following types are
-defined under [Types and Function Specifications] [1] in the Erlang
+defined under Types and Function Specifications [1] in the Erlang
 Reference Manual:
 
-  * maybe_improper_list(Type1, Type2)    %% Type1=contents, Type2=termination
-  * nonempty_improper_list(Type1, Type2) %% Type1 and Type2 as above
+  * maybe_improper_list(Type1, Type2)
+  * nonempty_improper_list(Type1, Type2)
   * nonempty_maybe_improper_list(Type1, Type2)
 
 "where the last two types define the set of Erlang terms one would
-expect." (sic)                                           ~~~~~~~~~
-~~~~~~
+expect."  (Type1 is the contents and Type2 is the termination.)
 
-The author may have thought that it is obvious what one would expect,
-but during discussions, multiple suggestions of what these types
-represent have been presented.
+It turns out that what one would expect is not what another one would
+expect.  Multiple suggestions of what these types represent have been
+presented.
 
-Q1. What do they represent?
+So what do they represent?  Does "maybe" refer to the being a list or to
+being improper?  Why is there no plain improper_list(Type1, Type2)?
 
-Q2. Does "maybe" refer to the being a list or to being improper?
-                              ~~~~~~~~~~~~       ~~~~~~~~~~~~~~
-Q3. Why is there no "nonempty_improper_list(Type1, Type2)"?
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+| Experiment using TypEr                                               |
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 
-Instead of asking the author, this is an attempt to use the tools
-written by the author (and associated people) to find out.
-
-   _____________________________
-  /                            /
- /  Approach 1. Using TypEr   /
-/____________________________/
-
-Write some functions without type specifications and use TypEr to give
+TypEr is included in the Dialyzer application in OTP.  The idea is to
+write some functions without type specifications and use TypEr to give
 them types.
 
-Result: The output of `typer type_me.erl` is stored in typer_output.txt.
+    -module(type_me).
 
-TypEr version v3.3.1 was used (Erlang/OTP 21).
+    -export([f1/1, f2/1, f3/1, f4/1]).
 
-   _____________________________
-  /                            /
- / Approach 2. Using dialyzer /
-/____________________________/
+    f1(N) when N > 1  -> tail;
+    f1(N)             -> [head | f1(N + 1)].
 
-Write some function with function specification and try to provoke
-dialyzer to report errors for them.
+    f2(X) when X >= 2 -> [head];
+    f2(X) when X <  2 -> [head | tail].
 
-TODO.
+    f3(X) when X >  3 -> [];
+    f3(X) when X == 3 -> [head | tail];
+    f3(X) when X <  3 -> [head | f3(X + 2)].
 
-The results will be presented when the experiments have been performed.
+    f4(_) -> [head | tail].
+
+Run typer.  I used TypEr version v3.3.1, included in Erlang/OTP 21.
+
+    $ /usr/lib/erlang/bin/typer type_me.erl
+
+    %% File: "type_me.erl"
+    %% -------------------
+    -spec f1(_) -> 'tail' | nonempty_improper_list('head','tail').
+    -spec f2(_) -> nonempty_maybe_improper_list('head','tail' | []).
+    -spec f3(_) -> maybe_improper_list('head','tail' | []).
+    -spec f4(_) -> nonempty_improper_list('head','tail').
+
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+| Concluions                                                           |
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+
+1. A bare non-[] termination value (Type2 in the defintions above, here
+   'tail') is not a value in any of the improper list types.  Hence, the
+   union result type of f1.
+2. Whenever [] is a possible but not the only termination, the list type
+   is a maybe improper list and [] is always included as a valid
+   termination.
+3. The following seem to hold (where [] is not in Type2):
+
+    nonempty_maybe_improper_list(Type1, Type2 | []) =
+        nonempty_list(Type1) | nonempty_improper_list(Type1, Type2).
+
+    maybe_improper_list(Type1, Type2 | []) =
+        list(Type1) | nonempty_improper_list(Type1, Type2).
+
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+| Future work                                                          |
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+
+Negative tests. Write some function with function specification and try
+to provoke dialyzer to report errors for them.
 
 [1]: http://erlang.org/doc/reference_manual/typespec.html

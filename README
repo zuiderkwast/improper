@@ -5,9 +5,8 @@
 An improper list is a chain of cons cells, not terminated by [].
    ~~~~~~~~~~~~~
 
-When writing types and function specifications, the following types are
-defined under Types and Function Specifications [1] in the Erlang
-Reference Manual:
+In the section Types and Function Specifications [1] in the Erlang
+Reference Manual, the following types are listed:
 
   * maybe_improper_list(Type1, Type2)
   * nonempty_improper_list(Type1, Type2)
@@ -27,9 +26,9 @@ being improper?  Why is there no plain improper_list(Type1, Type2)?
 | Experiment using TypEr                                               |
 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 
-TypEr is included in the Dialyzer application in OTP.  The idea is to
-write some functions without type specifications and use TypEr to give
-them types.
+TypEr [2] is included in the Dialyzer application in OTP.  The idea is
+to write some functions without type specifications and use TypEr to
+give them types.
 
     -module(type_me).
 
@@ -80,7 +79,8 @@ Run typer.  I used TypEr version v3.3.1, included in Erlang/OTP 21.
 | Future work                                                          |
 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 
-Negative tests. Write some function with function specification and try
-to provoke dialyzer to report errors for them.
+Negative tests.  Write some functions with function specifications and
+try to provoke Dialyzer to report errors for them.
 
-[1]: http://erlang.org/doc/reference_manual/typespec.html
+[1]: https://erlang.org/doc/reference_manual/typespec.html
+[2]: https://erlang.org/doc/man/typer.html
